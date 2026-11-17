@@ -2,6 +2,10 @@
 
 Agentic OS is a local workspace for running repeatable AI-assisted tasks, organizing knowledge in Markdown, and reviewing proposed actions.
 
+## Demo
+
+![Evidence Desk demonstration](docs/agentic-os-demo-v3.gif)
+
 ![Agentic OS Command Centre showing registered skills, a pending publishing request, local artifacts, and recent runs](docs/command-centre-demo.png)
 
 The running Command Centre displays fictional garden-project approvals, files, and run history. This screenshot was captured from an isolated checkout using the loopback runner.
