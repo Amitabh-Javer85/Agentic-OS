@@ -10,18 +10,7 @@ The running Command Centre displays fictional garden-project approvals, files, a
 
 ARMS stands for **Applications, Routines, Memory, and Skills**. A Python runner serves the single-file Command Centre on the loopback interface. The dashboard lists installed skills and reads artifacts, approvals, and recent runs through the runner. Scheduled routines can invoke the same runner from Windows Task Scheduler or Linux cron. Each skill has a Markdown procedure and a manifest that specifies model, budget, timeout, and the tools available during a run. The four-part model is adapted from [Jay E’s ARMS framework](https://robonuggets.beehiiv.com/p/the-new-agentic-os-format-for-claude-5-models).
 
-```mermaid
-flowchart LR
-    Dashboard["Command Centre"] --> Runner["Local Python runner"]
-    Schedule["Windows Task Scheduler or cron"] --> Runner
-    Catalog["Markdown skills and manifests"] --> Runner
-    Runner --> Agent["Claude Code subprocess for live skill execution"]
-    Agent --> Vault["Markdown vault"]
-    Agent --> Artifacts["Artifacts and pending approval requests"]
-    Runner --> Audit["JSON Lines run log"]
-    Artifacts --> Dashboard
-    Audit --> Dashboard
-```
+![Architecture diagram](docs/architecture.png)
 
 The ARMS v2 redesign retired the prototype FastAPI Bridge and plans for Redis, vector services, and streamed responses. Plain files keep local state inspectable and portable, and the reduced service count makes the system easier for one operator to run. Retrieval uses concise Markdown indexes and file search. That suits a curated personal vault and puts more weight on maintaining its indexes as it grows. Headless jobs return a structured result and retain an audit log. Live execution depends on the Claude Code command line and its permission model.
 
