@@ -1,0 +1,15 @@
+name: skill-creator
+description: Author local ARMS skills with concise routers and explicit execution manifests.
+version: "1.0.0"
+model: sonnet
+effort: medium
+max_budget_usd: 0.60
+timeout_seconds: 240
+allowed_tools:
+  - "Read(./skills/**)"
+  - "Read(./memory/**)"
+  - "Read(./CLAUDE.md)"
+  - "Edit(./skills/**)"
+  - "Edit(./CLAUDE.md)"
+  - "Edit(./memory/**)"
+risk_tier: internal_write

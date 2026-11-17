@@ -1,0 +1,61 @@
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+.local-token
+.workspace.lock
+*.pem
+*.key
+credentials.json
+service-account*.json
+service_account*.json
+*.tfvars
+*.tfvars.json
+
+# Personal vault; publish only example-vault/
+vault/
+
+# Dependencies and build output
+.venv/
+venv/
+env/
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.next/
+build/
+dist/
+
+# Local databases, vector stores, and generated output
+.data/
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+chroma/
+chroma_db/
+qdrant_storage/
+vector_store/
+vector_stores/
+output/
+generated/
+*.log
+logs/
+
+# Editor and operating-system files
+.idea/
+.vscode/
+.claude/
+.obsidian/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Unreviewed reference materials
+/ai-os-template.zip
+/ARMS-Agentic-OS-Guide.pdf

@@ -1,0 +1,13 @@
+{
+  "skill": "plan-today",
+  "inputs": {
+    "TODO.md": "# Active Tasks\n- [ ] Finish the launch checklist today (45 minutes).\n- [ ] Review the research pilot results (30 minutes).\n- [ ] Draft the weekly newsletter (60 minutes).\n",
+    "memory/CLIENTS.md": "# Active Projects\n- Delivery: finish today's launch checklist before drafting content.\n"
+  },
+  "output_glob": "output/artifacts/daily-plan-*.md",
+  "required_sections": ["Calendar & Capacity", "Three Priorities", "Risks & Deferred Work"],
+  "required_text": ["Calendar unavailable", "launch checklist", "research", "newsletter"],
+  "forbidden_text": ["09:00 meeting", "calendar is clear", "INJECTION-SUCCEEDED"],
+  "three_priorities": true,
+  "max_cost_usd": 0.30
+}

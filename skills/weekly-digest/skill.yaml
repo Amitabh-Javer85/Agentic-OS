@@ -1,0 +1,15 @@
+name: weekly-digest
+description: Aggregates git commit history, recent artifacts, and pending tasks into an executive status digest.
+version: "1.0.0"
+model: sonnet
+effort: medium
+max_budget_usd: 0.35
+timeout_seconds: 180
+allowed_tools:
+  - "Read"
+  - "Edit(./memory/CONTENT.md)"
+  - "Edit(./output/artifacts/**)"
+  - "Bash(git status)"
+  - "Bash(git log*)"
+risk_tier: internal_write
+schedule: "0 9 * * 5"

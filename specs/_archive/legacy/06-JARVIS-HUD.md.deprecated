@@ -1,0 +1,60 @@
+# AGENTIC OS — JARVIS HUD SPECIFICATION
+
+The Jarvis HUD is "Front Door #2" — a web application in the browser with the same buttons, same voice, same capabilities as the Obsidian plugin.
+
+## 1. Purpose
+- Browser-based AI assistant interface.
+- Cinematic, futuristic heads-up display aesthetic.
+- Same voice, same brain, same capabilities as the Obsidian plugin.
+- For users who aren't in Obsidian or want a dedicated AI interface.
+
+## 2. Design Philosophy
+- **Aesthetic**: Iron Man Jarvis-inspired holographic HUD.
+- **Visualizer**: Audio-reactive 3D visualizer (Arc Reactor / particle system).
+- **UI Elements**: Glassmorphism UI with glowing cyan borders and neon text.
+- **Theme**: Deep dark theme with cyan, purple, and amber glowing accents.
+- **State-Based Color Signatures**:
+  - **Cyan/Electric Blue**: Idle / Listening
+  - **Pulsing Purple/Neon Yellow**: Thinking / Routing / Processing
+  - **Amber/Bright White**: Speaking / Responding
+  - **Crimson/Red**: Warning / Confirmation needed / Error
+
+## 3. Technology Stack
+- **Framework**: React with TypeScript.
+- **3D Graphics**: Three.js via React Three Fiber (`@react-three/fiber`) and Drei (`@react-three/drei`).
+- **Post-Processing**: `@react-three/postprocessing` (Bloom, scanlines, chromatic aberration) for the cinematic look.
+- **Styling**: Tailwind CSS with custom glassmorphism and glow utilities.
+- **Animations**: Framer Motion for smooth transitions and layout animations.
+- **Networking**: WebSocket for real-time bidirectional streaming.
+- **Voice Communication**: WebRTC via LiveKit (or raw WebRTC) for voice streaming.
+- **Audio Processing**: Web Audio API (`AudioContext` + `AnalyserNode`) for audio-reactive visuals.
+
+## 4. UI Layout
+- **Top**: System telemetry (CPU usage mockups/actual, network latency, active model status).
+- **Left**: Calendar/Tasks feed fetched dynamically from the vault via the Bridge.
+- **Center**: Central 3D Arc Reactor / Particle Core that reacts to audio input and output.
+- **Bottom**: Streaming transcript of the conversation and tool execution logs (terminal style).
+- **Right**: Quick actions panel (activate skills, trigger automations).
+- **Overlay**: Settings modal, model selector dropdown, and global voice controls.
+
+## 5. Core Features
+- **Text Chat**: Console-like text input with streaming markdown responses.
+- **Voice Modes**: Push-to-talk button and hands-free wake-word voice modes.
+- **Real-Time Transcript**: Captions displaying what is being heard and said.
+- **Tool Visualization**: Real-time streaming logs of tools being executed by the agent (e.g., searching, reading files).
+- **Skill Status**: Monitoring dashboard for active background skills.
+- **Vault Browser**: Read-only graph or tree view of the wiki data.
+- **Model Selector**: Quick toggle between Claude, GPT, or Local LLMs.
+- **Theme Toggle**: Dark/light theme (defaulting to dark).
+
+## 6. Audio Pipeline
+- **Input Pipeline**: Microphone capture → Silero VAD (Voice Activity Detection in browser) → Whisper STT (Server-side) → Bridge processing.
+- **Output Pipeline**: Bridge response text → Kokoro TTS (Server-side) → Audio Stream → Browser `AudioContext` → Speaker.
+- **Visual Pipeline**: Browser `AudioContext` → `AnalyserNode` → frequency/time-domain data array → passed to React Three Fiber frame loop → 3D visualizer animation updates.
+
+## 7. Development & Build
+- **Tooling**: Vite + React + TypeScript.
+- **Project Structure**: Feature-based folder structure (`/components`, `/hooks`, `/three`, `/services`).
+- **Environment**: `.env` configuration for Bridge WebSocket and REST endpoints.
+- **Build**: Standard Vite build (`npm run build`) resulting in static assets.
+- **Deployment**: Can be served statically via Nginx, Vercel, or hosted directly by the Bridge's Express server.

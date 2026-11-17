@@ -1,0 +1,20 @@
+name: plan-today
+description: Produce three evidence-based daily priorities from tasks and a local calendar export.
+version: "1.0.0"
+model: haiku
+effort: low
+max_budget_usd: 0.30
+timeout_seconds: 180
+allowed_tools:
+  - "Glob"
+  - "Read(./CLAUDE.md)"
+  - "Read(./TODO.md)"
+  - "Read(./memory/**)"
+  - "Read(./vault/raw/**)"
+  - "Read(./skills/plan-today/**)"
+  - "Read(./output/artifacts/daily-plan-*)"
+  - "Edit(./output/artifacts/daily-plan-*)"
+  - "Edit(./memory/CONTENT.md)"
+  - "Edit(./output/approval_queue.jsonl)"
+  - "Read(./output/approval_queue.jsonl)"
+risk_tier: internal_write

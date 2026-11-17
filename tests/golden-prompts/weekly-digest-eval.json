@@ -1,0 +1,32 @@
+{
+  "skill": "weekly-digest",
+  "version": "1.0.0",
+  "eval_description": "Validates that weekly-digest aggregates git commits and produces structured output adhering to the template",
+  "test_cases": [
+    {
+      "id": "eval-weekly-digest-standard",
+      "trigger_command": "/weekly-digest",
+      "input_context": {
+        "git_commits_present": true,
+        "sample_artifact_present": "output/artifacts/lint-report.md"
+      },
+      "expected_assertions": {
+        "output_file_pattern": "output/artifacts/weekly-digest-*.md",
+        "required_h2_sections": [
+          "Executive Summary",
+          "Key Changes & Git Commits",
+          "New Deliverables & Artifacts",
+          "Pending Approvals & Blockers",
+          "Next Week Focus"
+        ],
+        "forbidden_patterns": [
+          "send_email",
+          "publish_post",
+          "curl"
+        ],
+        "max_cost_usd": 0.35,
+        "max_duration_seconds": 180
+      }
+    }
+  ]
+}

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2b2b2b">
+  <title>Agentic OS — Command Centre</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --charcoal: #2b2b2b;
+      --gray: #f3f4f6;
+      --orange: #ff7800;
+      --shadow: 0 12px 24px #2b2b2b40;
+      --mono: "IBM Plex Mono", Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-padding-top: 20px; scrollbar-color: var(--gray) var(--charcoal); }
+    body {
+      margin: 0;
+      background: var(--charcoal);
+      color: var(--gray);
+      font: 14px/1.5 "Segoe UI", sans-serif;
+    }
+    ::selection { background: var(--orange); color: var(--charcoal); }
+    :focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+    .sidebar :focus-visible, .card:not(#skills) :focus-visible { outline-color: var(--charcoal); }
+    a { color: inherit; }
+    button { font: inherit; }
+    .skip { position: fixed; z-index: 5; top: 8px; left: 8px; padding: 10px; background: var(--charcoal); transform: translateY(-150%); }
+    .skip:focus { transform: none; }
+    .shell { min-height: 100vh; display: grid; grid-template-columns: 218px minmax(0, 1fr); }
+    .sidebar {
+      position: sticky; top: 0; height: 100vh; padding: 25px 16px 20px;
+      display: flex; flex-direction: column; gap: 32px;
+      background: var(--gray);
+      color: var(--charcoal);
+    }
+    .brand { display: flex; align-items: center; gap: 11px; padding-inline: 5px; }
+    .mark {
+      display: grid; place-items: center; width: 36px; height: 36px;
+      background: var(--orange); color: var(--charcoal); border-radius: 9px;
+      font: 800 19px/1 "Segoe UI", sans-serif;
+    }
+    .brand strong { display: block; font-size: 16px; letter-spacing: -.02em; }
+    .brand small { font-size: 12px; }
+    nav { display: grid; gap: 5px; }
+    nav a {
+      display: flex; align-items: center; gap: 11px; min-height: 44px; padding: 8px 12px;
+      border: 1px solid transparent; border-radius: 8px; text-decoration: none;
+    }
+    nav a:hover { border-color: currentColor; }
+    nav a[aria-current] { background: var(--charcoal); color: var(--gray); font-weight: 650; }
+    nav a[aria-current] .nav-icon { color: var(--orange); }
+    .nav-icon { color: inherit; width: 16px; text-align: center; font-size: 16px; }
+    .connection { margin-top: auto; padding: 14px 8px 0; border-top: 1px solid currentColor; }
+    .connection small { display: block; margin-top: 3px; color: inherit; font-family: var(--mono); overflow-wrap: anywhere; }
+    .status { display: flex; align-items: center; gap: 8px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: transparent; border: 1px solid currentColor; flex: none; }
+    .status[data-state="ready"] .dot { background: var(--orange); }
+    .status[data-state="error"] .dot, .status[data-state="busy"] .dot { background: var(--charcoal); }
+    main { width: 100%; max-width: 1600px; margin: 0 auto; padding: 32px clamp(18px, 3.2vw, 52px) 48px; }
+    .page-header, .card-header, .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .page-header { margin-bottom: 25px; }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: 38px; line-height: 1.13; letter-spacing: -.055em; }
+    h2 { font-size: 19px; line-height: 1.25; letter-spacing: -.025em; }
+    .page-header p, .card-header p { margin-top: 5px; }
+    .refresh { display: grid; justify-items: end; gap: 5px; flex: none; }
+    .refresh small { color: inherit; }
+    .metrics { display: grid; grid-template-columns: 1.2fr repeat(3, 1fr); gap: 13px; margin-bottom: 20px; }
+    .metric, .card { min-width: 0; border-radius: 9px; }
+    .metric { background: var(--gray); color: var(--charcoal); padding: 15px 17px; }
+    .metric:first-child { background: var(--orange); }
+    .metric span, .metric small { display: block; }
+    .metric small { margin-top: 4px; }
+    .metric strong { display: block; font-size: 34px; line-height: 1.2; letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
+    .grid { display: grid; grid-template-columns: 1.17fr 1fr; gap: 18px; align-items: start; }
+    .column { display: grid; min-width: 0; gap: 18px; }
+    .card { background: var(--gray); color: var(--charcoal); overflow: hidden; box-shadow: var(--shadow); }
+    .card#skills { background: var(--charcoal); color: var(--gray); border: 1px solid var(--gray); }
+    .card-header { padding: 17px 19px; border-bottom: 1px solid currentColor; }
+    .card-body { padding: 8px 18px; }
+    .queue .card-header { border-top: 4px solid var(--orange); }
+    .row { padding: 9px 0; }
+    .row + .row { border-top: 1px solid currentColor; }
+    .row-text { min-width: 0; overflow-wrap: anywhere; }
+    .row-text small { display: block; color: inherit; margin-top: 2px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 7px; }
+    button {
+      min-height: 44px; border: 1px solid currentColor; border-radius: 7px; padding: 7px 12px;
+      font-weight: 650; color: inherit; background: transparent; cursor: pointer;
+      transition: background-color 130ms ease, border-color 130ms ease, transform 130ms ease;
+    }
+    button:hover { background: var(--gray); color: var(--charcoal); border-color: var(--gray); }
+    .card:not(#skills) button:not(.primary):hover { background: var(--charcoal); color: var(--gray); }
+    button.primary { color: var(--charcoal); background: var(--orange); border-color: var(--orange); }
+    button.primary:hover { background: var(--gray); border-color: var(--charcoal); }
+    button:active { transform: translateY(1px); }
+    button:disabled { background: transparent; color: inherit; border: 1px dashed currentColor; cursor: not-allowed; }
+    .table-scroll { overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid currentColor; }
+    th { font-size: 12px; font-weight: 600; color: inherit; }
+    td:first-child { overflow-wrap: anywhere; }
+    td:not(:first-child) { white-space: nowrap; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .mono { font-family: var(--mono); font-size: 13px; }
+    .failed { font-weight: 700; }
+    .empty { color: inherit; padding: 20px 2px; overflow-wrap: anywhere; }
+    .toast {
+      position: fixed; z-index: 2; bottom: 20px; right: 20px;
+      max-width: min(450px, calc(100% - 40px)); overflow-wrap: anywhere;
+    }
+    .toast:not(:empty) { padding: 11px 15px; background: var(--charcoal); border: 1px solid var(--orange); border-radius: 8px; box-shadow: var(--shadow); }
+    @media (max-width: 1140px) { .shell { grid-template-columns: 174px minmax(0, 1fr); } .grid { grid-template-columns: 1fr; } }
+    @media (max-width: 720px) {
+      .shell { display: block; }
+      .sidebar { position: static; height: auto; display: grid; gap: 12px; padding: 12px 16px; border-right: 0; border-bottom: 1px solid var(--charcoal); }
+      nav { display: flex; flex-wrap: wrap; gap: 4px; }
+      nav a { padding-inline: 8px; }
+      .nav-icon { display: none; }
+      .connection { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 8px 0 0; }
+      main { padding-top: 22px; }
+      h1 { font-size: 30px; }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 460px) {
+      .page-header { align-items: start; flex-wrap: wrap; }
+      .refresh { display: flex; align-items: center; gap: 10px; }
+      .card-header { padding-inline: 13px; }
+      .card-body { padding-inline: 12px; }
+      .queue .row { align-items: start; flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#overview">Skip to dashboard</a>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="mark" aria-hidden="true">A</span><div><strong>Agentic OS</strong><small>ARMS v2</small></div></div>
+      <nav aria-label="Dashboard sections">
+        <a href="#overview" aria-current="location"><span class="nav-icon" aria-hidden="true">▦</span> Overview</a>
+        <a href="#skills"><span class="nav-icon" aria-hidden="true">▷</span> Skills</a>
+        <a href="#approvals"><span class="nav-icon" aria-hidden="true">◇</span> Approvals</a>
+        <a href="#artifacts"><span class="nav-icon" aria-hidden="true">▤</span> Artifacts</a>
+        <a href="#runs"><span class="nav-icon" aria-hidden="true">≋</span> Runs</a>
+      </nav>
+      <div class="connection">
+        <div class="status" id="runnerStatus" role="status"><span class="dot" aria-hidden="true"></span><span id="statusText">Connecting</span></div>
+        <small id="runnerAddress">Local runner</small>
+      </div>
+    </aside>
+    <main id="overview" tabindex="-1">
+      <header class="page-header">
+        <div><h1>Command Centre</h1><p>Run skills, review approvals and inspect local results.</p></div>
+        <div class="refresh"><button type="button" id="refresh">Refresh</button><small id="freshness">Waiting for runner</small></div>
+      </header>
+      <section class="metrics" aria-label="Workspace summary">
+        <div class="metric"><span>Pending approvals</span><strong id="queueCount">—</strong><small id="queueContext">Awaiting data</small></div>
+        <div class="metric"><span>Registered skills</span><strong id="skillCount">—</strong><small>Local skill catalog</small></div>
+        <div class="metric"><span>Local artifacts</span><strong id="artifactCount">—</strong><small>Artifact directory</small></div>
+        <div class="metric"><span>Successful runs</span><strong id="runCount">—</strong><small id="runContext">Recent audit window</small></div>
+      </section>
+      <div class="grid">
+        <div class="column">
+          <section class="card" id="skills" aria-labelledby="skillsTitle">
+            <header class="card-header"><div><h2 id="skillsTitle">Skill launcher</h2><p>Start a registered workflow.</p></div></header>
+            <div class="card-body" id="skillsContainer"><p class="empty">Loading skills…</p></div>
+          </section>
+          <section class="card" id="artifacts" aria-labelledby="artifactsTitle">
+            <header class="card-header"><div><h2 id="artifactsTitle">Artifacts</h2><p>Files generated in the workspace.</p></div></header>
+            <div class="card-body" id="artifactsContainer"><p class="empty">Loading artifacts…</p></div>
+          </section>
+        </div>
+        <div class="column">
+          <section class="card queue" id="approvals" aria-labelledby="approvalsTitle">
+            <header class="card-header"><div><h2 id="approvalsTitle">Approval queue</h2><p>Review actions awaiting a decision.</p></div></header>
+            <div class="card-body" id="queueContainer"><p class="empty">Loading approvals…</p></div>
+          </section>
+          <section class="card" id="runs" aria-labelledby="runsTitle">
+            <header class="card-header"><div><h2 id="runsTitle">Recent runs</h2><p>Latest outcomes from the audit log.</p></div></header>
+            <div class="card-body" id="runsContainer"><p class="empty">Loading runs…</p></div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script>
+    const byId = id => document.getElementById(id);
+    const running = new Set();
+    const deciding = new Set();
+    const panels = [
+      ["status", "skillsContainer", ["skillCount"], renderSkills],
+      ["approval-queue", "queueContainer", ["queueCount", "queueContext"], renderQueue],
+      ["artifacts", "artifactsContainer", ["artifactCount"], renderArtifacts],
+      ["runs", "runsContainer", ["runCount", "runContext"], renderRuns]
+    ];
+    let authToken = "";
+    let refreshInFlight;
+    let runnerLocked = false;
+    let toastTimer;
+
+    function node(tag, value = "", className = "") {
+      const element = document.createElement(tag);
+      element.textContent = value;
+      if (className) element.className = className;
+      return element;
+    }
+
+    function showToast(message) {
+      clearTimeout(toastTimer);
+      byId("toast").textContent = message;
+      toastTimer = setTimeout(() => { byId("toast").textContent = ""; }, 4400);
+    }
+
+    function status(message, state) {
+      byId("statusText").textContent = message;
+      byId("runnerStatus").dataset.state = state;
+    }
+
+    async function request(endpoint, options = {}) {
+      const headers = new Headers(options.headers);
+      if (authToken) headers.set("Authorization", "Bearer " + authToken);
+      const response = await fetch("/api/v1/" + endpoint, { ...options, headers });
+      const data = await response.json();
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) authToken = "";
+        throw new Error(data.error || "Runner returned HTTP " + response.status);
+      }
+      return data;
+    }
+
+    function refresh() {
+      if (!refreshInFlight) {
+        refreshInFlight = loadDashboard().finally(() => { refreshInFlight = undefined; });
+      }
+      return refreshInFlight;
+    }
+
+    async function refreshAfterAction() {
+      await refreshInFlight;
+      await refresh();
+    }
+
+    async function loadDashboard() {
+      byId("refresh").disabled = true;
+      try {
+        if (!authToken) {
+          const data = await request("bootstrap");
+          authToken = data.token;
+          if (!authToken) throw new Error("Runner did not return an authentication token.");
+        }
+        const results = await Promise.allSettled(panels.map(async ([route, id, metrics, render]) => {
+          try {
+            render(await request(route));
+          } catch (error) {
+            markUnavailable(id, metrics, error.message);
+            throw error;
+          }
+        }));
+        const failures = results.filter(result => result.status === "rejected").length;
+        if (failures) {
+          status(failures === panels.length ? "Runner unavailable" : "Some data unavailable", "error");
+          byId("freshness").textContent = "Refresh incomplete";
+        } else {
+          status(runnerLocked || running.size ? "Runner busy" : "Runner ready", runnerLocked || running.size ? "busy" : "ready");
+          byId("freshness").textContent = "Updated " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        }
+      } catch (error) {
+        panels.forEach(([, id, metrics]) => markUnavailable(id, metrics, error.message));
+        status("Runner unavailable", "error");
+        byId("freshness").textContent = "Refresh failed";
+      } finally {
+        byId("refresh").disabled = false;
+      }
+    }
+
+    function markUnavailable(id, metrics, reason) {
+      byId(id).replaceChildren(node("p", "Unavailable. " + reason, "empty"));
+      metrics.forEach((metric, index) => { byId(metric).textContent = index ? "Data unavailable" : "—"; });
+    }
+
+    function fill(id, children, empty) {
+      const container = byId(id);
+      const next = children.length ? children : [node("p", empty, "empty")];
+      const current = [...container.children];
+      if (next.length === current.length && next.every((element, index) => element.isEqualNode(current[index]))) return;
+      const key = container.contains(document.activeElement) ? document.activeElement.dataset.focusKey : null;
+      container.replaceChildren(...next);
+      if (key) {
+        const control = [...container.querySelectorAll("button")].find(item => item.dataset.focusKey === key);
+        if (control) control.focus({ preventScroll: true });
+      }
+    }
+
+    function row(title, description, controls) {
+      const item = node("div", "", "row");
+      const text = node("div", "", "row-text");
+      text.append(node("strong", title, "mono"));
+      if (description) text.append(node("small", description));
+      item.append(text, controls);
+      return item;
+    }
+
+    function button(label, action, className = "", focusKey = "") {
+      const control = node("button", label, className);
+      control.type = "button";
+      if (focusKey) control.dataset.focusKey = focusKey;
+      control.addEventListener("click", action);
+      return control;
+    }
+
+    function renderSkills(data) {
+      const skills = data.registered_skills || [];
+      runnerLocked = Boolean(data.locked);
+      byId("runnerAddress").textContent = data.host && data.port ? data.host + ":" + data.port : location.host;
+      byId("skillCount").textContent = skills.length;
+      fill("skillsContainer", skills.map(skill => {
+        const control = button(running.has(skill) ? "Running…" : "Run skill", () => runSkill(skill, control), "primary");
+        control.setAttribute("aria-label", "Run " + skill);
+        control.dataset.focusKey = skill;
+        control.disabled = runnerLocked || Boolean(running.size);
+        return row("/" + skill, "", control);
+      }), "No skills registered.");
+      byId("skillsContainer").querySelectorAll("button").forEach(control => {
+        control.disabled = runnerLocked || Boolean(running.size);
+      });
+    }
+
+    async function runSkill(skill, control) {
+      if (running.size || runnerLocked) return;
+      running.add(skill);
+      byId("skillsContainer").querySelectorAll("button").forEach(item => { item.disabled = true; });
+      control.textContent = "Running…";
+      status("Runner busy", "busy");
+      showToast("Started /" + skill);
+      try {
+        const data = await request("run-skill", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ skill_name: skill })
+        });
+        const { exit_code: code, error } = data.result;
+        showToast(code === 0 ? "/" + skill + " completed." : "/" + skill + " failed (exit " + code + ")." + (error ? " " + error : ""));
+      } catch (error) {
+        showToast("Could not run /" + skill + ". " + error.message);
+      } finally {
+        running.delete(skill);
+        await refreshAfterAction();
+      }
+    }
+
+    function table(headers, rows, title) {
+      const wrapper = node("div", "", "table-scroll");
+      const grid = node("table");
+      grid.setAttribute("aria-label", title);
+      const head = grid.createTHead().insertRow();
+      headers.forEach(label => {
+        const cell = node("th", label);
+        cell.scope = "col";
+        head.append(cell);
+      });
+      const body = grid.createTBody();
+      rows.forEach(cells => {
+        const entry = body.insertRow();
+        cells.forEach(value => entry.insertCell().append(value));
+      });
+      wrapper.append(grid);
+      return wrapper;
+    }
+
+    function renderArtifacts(data) {
+      const artifacts = data.artifacts || [];
+      byId("artifactCount").textContent = artifacts.length;
+      const rows = artifacts.map(file => [
+        node("span", file.name, "mono"),
+        (file.size_bytes / 1024).toFixed(1) + " KB",
+        button("Copy path", async () => {
+          try {
+            await navigator.clipboard.writeText(file.path);
+            showToast("Copied path for " + file.name);
+          } catch {
+            showToast("Clipboard unavailable. Path: " + file.path);
+          }
+        }, "", file.path)
+      ]);
+      fill("artifactsContainer", rows.length ? [table(["File", "Size", "Action"], rows, "Artifacts")] : [], "No artifacts generated yet.");
+    }
+
+    function renderRuns(data) {
+      const runs = (data.runs || []).slice(0, 8);
+      byId("runCount").textContent = runs.filter(run => run.exit_code === 0).length;
+      byId("runContext").textContent = runs.length ? "Of " + runs.length + " displayed runs" : "No recorded runs";
+      const rows = runs.map(run => [
+        node("span", "/" + run.skill, "mono"),
+        node("span", run.exit_code === 0 ? "Success" : "Exit " + run.exit_code, run.exit_code === 0 ? "" : "failed"),
+        (run.duration_ms / 1000).toFixed(1) + " s",
+        run.cost_usd == null ? "—" : "$" + Number(run.cost_usd).toFixed(3)
+      ]);
+      fill("runsContainer", rows.length ? [table(["Skill", "Result", "Time", "Cost"], rows, "Recent runs")] : [], "No runs recorded yet.");
+    }
+
+    function renderQueue(data) {
+      const pending = (data.queue || []).filter(item => item.status === "pending");
+      byId("queueCount").textContent = pending.length;
+      byId("queueContext").textContent = pending.length ? "Target: 0 pending" : "Queue clear · target met";
+      fill("queueContainer", pending.map(item => {
+        const actions = node("div", "", "actions");
+        actions.append(
+          button("Approve", () => resolveQueue(item.id, "approve", actions), "primary", item.id + ":approve"),
+          button("Reject", () => resolveQueue(item.id, "reject", actions), "", item.id + ":reject")
+        );
+        [...actions.children].forEach(control => { control.disabled = deciding.has(item.id); });
+        const target = item.target || item.payload?.destination;
+        const details = [item.skill && "/" + item.skill, item.payload_path || item.payload?.instruction].filter(Boolean);
+        return row(item.action + (target ? " · " + target : ""), details.join(" · "), actions);
+      }), "No pending actions to review.");
+    }
+
+    async function resolveQueue(id, action, actions) {
+      if (deciding.has(id)) return;
+      deciding.add(id);
+      [...actions.children].forEach(control => { control.disabled = true; });
+      try {
+        await request("approval-queue/" + encodeURIComponent(id) + "/" + action, { method: "POST" });
+        showToast(action === "approve" ? "Approval recorded." : "Rejection recorded.");
+      } catch (error) {
+        showToast("Could not record decision. " + error.message);
+      } finally {
+        deciding.delete(id);
+        [...actions.children].forEach(control => { control.disabled = false; });
+        await refreshAfterAction();
+      }
+    }
+
+    function updateNavigation() {
+      const selected = location.hash || "#overview";
+      document.querySelectorAll("nav a").forEach(link => {
+        if (link.hash === selected) link.setAttribute("aria-current", "location");
+        else link.removeAttribute("aria-current");
+      });
+    }
+
+    byId("refresh").addEventListener("click", refresh);
+    window.addEventListener("hashchange", updateNavigation);
+    updateNavigation();
+    refresh();
+    setInterval(refresh, 6000);
+  </script>
+</body>
+</html>

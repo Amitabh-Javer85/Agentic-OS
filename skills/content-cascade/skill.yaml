@@ -1,0 +1,19 @@
+name: content-cascade
+description: Create local thread and newsletter drafts without publication.
+version: "1.0.0"
+model: sonnet
+effort: low
+max_budget_usd: 0.45
+timeout_seconds: 240
+allowed_tools:
+  - "Glob"
+  - "Read(./CLAUDE.md)"
+  - "Read(./vault/wiki/**)"
+  - "Read(./memory/CONTENT.md)"
+  - "Read(./skills/content-cascade/**)"
+  - "Read(./output/artifacts/content-cascade-*)"
+  - "Read(./output/approval_queue.jsonl)"
+  - "Edit(./output/artifacts/content-cascade-*)"
+  - "Edit(./memory/CONTENT.md)"
+  - "Edit(./output/approval_queue.jsonl)"
+risk_tier: internal_write

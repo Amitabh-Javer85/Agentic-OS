@@ -1,0 +1,19 @@
+name: research-brief
+description: Synthesize raw Markdown evidence into a source-linked evergreen wiki note.
+version: "1.0.0"
+model: sonnet
+effort: medium
+max_budget_usd: 0.50
+timeout_seconds: 240
+allowed_tools:
+  - "Glob"
+  - "Read(./CLAUDE.md)"
+  - "Read(./vault/raw/**)"
+  - "Read(./vault/wiki/**)"
+  - "Read(./memory/CONTENT.md)"
+  - "Read(./skills/research-brief/**)"
+  - "Edit(./vault/wiki/research-*)"
+  - "Edit(./memory/CONTENT.md)"
+  - "Edit(./output/approval_queue.jsonl)"
+  - "Read(./output/approval_queue.jsonl)"
+risk_tier: internal_write

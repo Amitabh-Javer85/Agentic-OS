@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Evidence Desk · Agentic OS</title>
+<style>
+:root{color-scheme:dark;--bg:#101512;--panel:#19211c;--line:#36473b;--text:#edf3eb;--muted:#afc1b0;--accent:#b9ed97}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,sans-serif}
+header,main,footer{max-width:1200px;margin:auto;padding:28px}header{display:flex;justify-content:space-between;gap:24px;border-bottom:1px solid var(--line)}
+h1{font:500 clamp(32px,5vw,54px)/1.1 Georgia,serif;margin:8px 0 16px}h2{font-size:20px;margin:0 0 16px}p{margin:8px 0}.eyebrow{color:var(--accent);font-size:12px;letter-spacing:.15em;text-transform:uppercase}
+.muted,small,footer{color:var(--muted)}.badge{align-self:start;padding:5px 12px;border:1px solid var(--line);border-radius:20px;white-space:nowrap}
+main{display:grid;grid-template-columns:1fr 1fr;gap:24px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px}
+label{display:block;font-weight:600;margin:16px 0 6px}input,textarea{width:100%;padding:12px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:6px;font:inherit}
+textarea{resize:vertical;min-height:300px;font-size:14px}input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}button{padding:11px 16px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--text);font:600 14px system-ui;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:#14200f}button:disabled{opacity:.45;cursor:default}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.7 ui-monospace,monospace;margin:0}
+#status{min-height:26px;margin-top:14px;color:var(--accent)}.empty{color:var(--muted);padding:32px 0}footer{border-top:1px solid var(--line);font-size:13px}
+@media(max-width:800px){main{grid-template-columns:1fr}header{flex-direction:column}header,main,footer{padding:20px}.panel{padding:18px}}
+</style>
+</head>
+<body>
+<header><div><div class="eyebrow">Agentic OS / Applications</div><h1>Evidence Desk</h1><p class="muted">Turn source notes into a traceable research handoff.</p></div><span class="badge">Local · offline · no account</span></header>
+<main>
+<section class="panel" aria-labelledby="input-heading"><h2 id="input-heading">01 / Gather the evidence</h2>
+<p class="muted">Paste up to 10 sources. Put each source title or URL on its first line, notes beneath it, and separate sources with a line containing <code>---</code>.</p>
+<form id="brief-form">
+<label for="topic">Brief title</label><input id="topic" maxlength="140" value="Research brief" required>
+<label for="sources">Source notes</label><textarea id="sources" maxlength="50000" required placeholder="Source title or URL&#10;Paste the source notes here.&#10;---&#10;Another source title&#10;Paste its notes here."></textarea>
+<small>The brief quotes the first two sentences from each source. It does not verify claims or infer conclusions.</small>
+<div class="actions"><button class="primary" type="submit">Build brief</button><button id="demo" type="button">Load fictional demo</button></div>
+</form><p id="status" role="status" aria-live="polite"></p>
+</section>
+<section class="panel" aria-labelledby="output-heading"><h2 id="output-heading">02 / Review the handoff</h2>
+<p id="empty" class="empty">Your brief will appear here with source references and open questions.</p>
+<pre id="preview" aria-label="Generated Markdown brief" hidden></pre>
+<div class="actions"><button id="download" type="button" disabled>Download Markdown</button></div>
+</section>
+</main>
+<footer>All processing stays in this tab. Download saves a local draft; nothing is sent or published. For an evergreen synthesis, pass the reviewed brief to the Agentic OS research-brief skill.</footer>
+<script>
+'use strict';
+const byId = id => document.getElementById(id);
+let currentBrief = '';
+let currentFilename = '';
+const demo = `Fictional garden trial / observation log
+Plot A used drip irrigation for four weeks. Water use fell from 100 to 70 litres per week. The observation had no control plot.
+---
+Fictional garden trial / interview notes
+The gardener reported less time spent watering. No time measurements were recorded. A controlled follow-up is needed.`;
+
+function parseSources(text) {
+  if (text.length > 50000) throw new Error('Keep source notes below 50,000 characters.');
+  const blocks = text.trim().split(/^\s*---\s*$/m).filter(block => block.trim());
+  if (!blocks.length) throw new Error('Add at least one source with a title and notes.');
+  if (blocks.length > 10) throw new Error('Use no more than 10 sources per brief.');
+  return blocks.map((block, index) => {
+    const lines = block.trim().split(/\r?\n/);
+    const title = lines.shift().trim();
+    const notes = lines.join('\n').trim();
+    if (!title || !notes) throw new Error(`Source ${index + 1} needs a title and notes on separate lines.`);
+    return {id: `S${index + 1}`, title, notes};
+  });
+}
+
+function buildBrief(topic, sources) {
+  const excerpts = sources.map(source => {
+    const sentences = source.notes.split(/(?<=[.!?])\s+/);
+    const excerpt = sentences.slice(0, 2).join(' ').trim();
+    return `### [${source.id}] ${source.title}\n\n${excerpt.split('\n').map(line => '> ' + line).join('\n')}`;
+  });
+  return `# ${topic.trim()}\n\nStatus: local extractive draft; claims require review.\n\n## Evidence excerpts\n\n${excerpts.join('\n\n')}\n\n## Open questions\n\n- Which claims need independent verification?\n- Where do the sources disagree or leave gaps?\n- What evidence would change the working conclusion?\n\n## Sources\n\n${sources.map(source => `- [${source.id}] ${source.title}`).join('\n')}\n\n## Method\n\nFirst two sentences quoted from each supplied source, in input order. No model, network request, or factual verification was used.\n`;
+}
+
+function invalidate() {
+  currentBrief = '';
+  byId('download').disabled = true;
+  byId('preview').hidden = true;
+  byId('empty').hidden = false;
+  byId('status').textContent = 'Build a brief to include the current inputs.';
+}
+
+byId('brief-form').addEventListener('submit', event => {
+  event.preventDefault();
+  invalidate();
+  try {
+    const topic = byId('topic').value.trim();
+    if (!topic) throw new Error('Enter a brief title.');
+    const sources = parseSources(byId('sources').value);
+    currentBrief = buildBrief(topic, sources);
+    currentFilename = (topic.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'research-brief') + '.md';
+    byId('preview').textContent = currentBrief;
+    byId('preview').hidden = false;
+    byId('empty').hidden = true;
+    byId('download').disabled = false;
+    byId('status').textContent = `${sources.length} source${sources.length === 1 ? '' : 's'} included. Review the excerpts before sharing.`;
+  } catch (error) {
+    byId('status').textContent = error.message;
+  }
+});
+byId('demo').addEventListener('click', () => {
+  byId('topic').value = 'Fictional garden irrigation trial';
+  byId('sources').value = demo;
+  invalidate();
+});
+byId('sources').addEventListener('input', invalidate);
+byId('topic').addEventListener('input', invalidate);
+byId('download').addEventListener('click', () => {
+  if (!currentBrief) return;
+  const url = URL.createObjectURL(new Blob([currentBrief], {type: 'text/markdown;charset=utf-8'}));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = currentFilename;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+</script>
+</body>
+</html>
